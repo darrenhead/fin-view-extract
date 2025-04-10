@@ -25,7 +25,7 @@ export async function uploadPdf(file: File, userId: string): Promise<{ data: any
       storage_path: filePath,
       uploaded_at: new Date().toISOString(),
       processing_status: 'uploaded'
-    })
+    } as any)
     .select()
     .single();
 
@@ -47,7 +47,7 @@ async function processPdf(statementId: string, userId: string, filePath: string)
     // Update statement status to processing
     await supabase
       .from('statements')
-      .update({ processing_status: 'processing' })
+      .update({ processing_status: 'processing' } as any)
       .eq('id', statementId);
 
     // In a real implementation, this would be a server-side API call
@@ -82,12 +82,12 @@ async function processPdf(statementId: string, userId: string, filePath: string)
       ];
 
       // Insert mock transactions
-      await supabase.from('transactions').insert(mockTransactions);
+      await supabase.from('transactions').insert(mockTransactions as any);
 
       // Update statement status to processed
       await supabase
         .from('statements')
-        .update({ processing_status: 'processed' })
+        .update({ processing_status: 'processed' } as any)
         .eq('id', statementId);
     }, 3000);
   } catch (error) {
@@ -95,7 +95,7 @@ async function processPdf(statementId: string, userId: string, filePath: string)
     // Update statement status to error
     await supabase
       .from('statements')
-      .update({ processing_status: 'error' })
+      .update({ processing_status: 'error' } as any)
       .eq('id', statementId);
   }
 }
@@ -103,7 +103,7 @@ async function processPdf(statementId: string, userId: string, filePath: string)
 // Function to get all statements for a user
 export async function getUserStatements(userId: string): Promise<{ data: Statement[] | null; error: any }> {
   const { data, error } = await supabase
-    .from('statements')
+    .from('statements' as any)
     .select('*')
     .eq('user_id', userId)
     .order('uploaded_at', { ascending: false });
@@ -114,7 +114,7 @@ export async function getUserStatements(userId: string): Promise<{ data: Stateme
 // Function to get a specific statement
 export async function getStatement(statementId: string, userId: string): Promise<{ data: Statement | null; error: any }> {
   const { data, error } = await supabase
-    .from('statements')
+    .from('statements' as any)
     .select('*')
     .eq('id', statementId)
     .eq('user_id', userId)
@@ -126,7 +126,7 @@ export async function getStatement(statementId: string, userId: string): Promise
 // Function to get transactions for a statement
 export async function getStatementTransactions(statementId: string, userId: string): Promise<{ data: Transaction[] | null; error: any }> {
   const { data, error } = await supabase
-    .from('transactions')
+    .from('transactions' as any)
     .select('*')
     .eq('statement_id', statementId)
     .eq('user_id', userId)
