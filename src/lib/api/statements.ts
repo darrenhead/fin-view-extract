@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Statement, Transaction } from '@/types/database.types';
 
 // Function to upload a PDF to Supabase Storage
