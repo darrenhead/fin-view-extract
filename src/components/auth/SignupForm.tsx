@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -24,23 +25,18 @@ export function SignupForm() {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const { error } = await signUp(email, password);
 
       if (error) {
         setError(error.message);
         return;
       }
 
-      if (data?.user) {
-        toast({
-          title: "Sign-up successful",
-          description: "Your account has been created successfully!",
-        });
-        navigate('/login');
-      }
+      toast({
+        title: "Sign-up successful",
+        description: "Your account has been created successfully!",
+      });
+      navigate('/login');
     } catch (err) {
       setError('An unexpected error occurred');
       console.error('Signup error:', err);
