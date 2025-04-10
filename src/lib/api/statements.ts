@@ -40,8 +40,10 @@ export async function uploadPdf(file: File, userId: string): Promise<{ data: any
     return { data: null, error: statementError };
   }
 
-  // Trigger processing
-  await processPdf(statementData.id, userId, filePath);
+  // Trigger processing - safely access the id
+  if (statementData && typeof statementData === 'object' && 'id' in statementData) {
+    await processPdf(statementData.id, userId, filePath);
+  }
 
   return { data: statementData, error: null };
 }
@@ -113,7 +115,10 @@ export async function getUserStatements(userId: string): Promise<{ data: Stateme
     .eq('user_id', userId)
     .order('uploaded_at', { ascending: false });
 
-  return { data: data as Statement[] | null, error };
+  return { 
+    data: data as Statement[] | null, 
+    error 
+  };
 }
 
 // Function to get a specific statement
@@ -125,7 +130,10 @@ export async function getStatement(statementId: string, userId: string): Promise
     .eq('user_id', userId)
     .single();
 
-  return { data: data as Statement | null, error };
+  return { 
+    data: data as Statement | null, 
+    error 
+  };
 }
 
 // Function to get transactions for a statement
@@ -137,5 +145,8 @@ export async function getStatementTransactions(statementId: string, userId: stri
     .eq('user_id', userId)
     .order('transaction_date', { ascending: false });
 
-  return { data: data as Transaction[] | null, error };
+  return { 
+    data: data as Transaction[] | null, 
+    error 
+  };
 }
