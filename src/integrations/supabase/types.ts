@@ -33,6 +33,77 @@ export type Database = {
         }
         Relationships: []
       }
+      statements: {
+        Row: {
+          file_name: string
+          id: string
+          processing_status: string
+          statement_type: string | null
+          storage_path: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          file_name: string
+          id?: string
+          processing_status?: string
+          statement_type?: string | null
+          storage_path: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          file_name?: string
+          id?: string
+          processing_status?: string
+          statement_type?: string | null
+          storage_path?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          description: string
+          id: string
+          raw_data: Json | null
+          statement_id: string
+          transaction_date: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          description: string
+          id?: string
+          raw_data?: Json | null
+          statement_id: string
+          transaction_date: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          description?: string
+          id?: string
+          raw_data?: Json | null
+          statement_id?: string
+          transaction_date?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: false
+            referencedRelation: "statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

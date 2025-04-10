@@ -108,7 +108,7 @@ export async function getUserStatements(userId: string): Promise<{ data: Stateme
     .eq('user_id', userId)
     .order('uploaded_at', { ascending: false });
 
-  return { data, error };
+  return { data: data as Statement[] | null, error };
 }
 
 // Function to get a specific statement
@@ -120,7 +120,7 @@ export async function getStatement(statementId: string, userId: string): Promise
     .eq('user_id', userId)
     .single();
 
-  return { data, error };
+  return { data: data as Statement | null, error };
 }
 
 // Function to get transactions for a statement
@@ -132,5 +132,5 @@ export async function getStatementTransactions(statementId: string, userId: stri
     .eq('user_id', userId)
     .order('transaction_date', { ascending: false });
 
-  return { data, error };
+  return { data: data as Transaction[] | null, error };
 }
