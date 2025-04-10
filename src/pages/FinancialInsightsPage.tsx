@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
-import { StatementsTable } from "@/components/dashboard/StatementsTable";
 import { FinancialInsightsOptimized } from "@/components/dashboard/FinancialInsightsOptimized";
-import { UploadDialog } from "@/components/dashboard/UploadDialog";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Lightbulb } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, RefreshCw, Lightbulb } from "lucide-react";
 import { getAllUserTransactions } from "@/lib/api/statements";
 import {
   generateAndStoreInsights,
@@ -14,14 +13,13 @@ import {
 import { Transaction } from "@/types/database.types";
 import { useToast } from "@/components/ui/use-toast";
 
-const Dashboard = () => {
+const FinancialInsightsPage = () => {
   const { user } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
   const { toast } = useToast();
 
   const handleRefresh = () => {
-    console.log("Refreshing dashboard...");
     setRefreshKey((prevKey) => prevKey + 1);
   };
 
@@ -84,7 +82,7 @@ const Dashboard = () => {
           description: "Your financial insights are ready to view!",
         });
 
-        // Refresh the dashboard to show new insights with a delay
+        // Refresh the page to show new insights with a delay
         setTimeout(() => {
           console.log("Refreshing dashboard after generating insights");
           handleRefresh();
@@ -115,13 +113,13 @@ const Dashboard = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage and view your financial statements
-            </p>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="ghost" asChild>
+            <Link to="/dashboard">
+              <ChevronLeft className="h-4 w-4 mr-1" /> Back to Dashboard
+            </Link>
+          </Button>
+
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -150,24 +148,22 @@ const Dashboard = () => {
                 </>
               )}
             </Button>
-
-            <UploadDialog onUploadComplete={handleRefresh} />
           </div>
         </div>
 
-        <div className="space-y-8">
-          {/* Financial Insights */}
-          <FinancialInsightsOptimized key={`insights-${refreshKey}`} />
-
-          {/* Statements Table */}
-          <div className="bg-white rounded-lg border shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Your Statements</h2>
-            <StatementsTable key={refreshKey} />
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Financial Insights
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            AI-powered analysis of your spending patterns and recommendations
+          </p>
         </div>
+
+        <FinancialInsightsOptimized key={`insights-${refreshKey}`} />
       </main>
     </div>
   );
 };
 
-export default Dashboard;
+export default FinancialInsightsPage;
