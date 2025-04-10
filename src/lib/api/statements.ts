@@ -10,15 +10,19 @@ export async function uploadPdf(file: File, userId: string): Promise<{ data: any
   // Upload to Supabase Storage
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from('statements')
-    .upload(filePath, file);
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
 
   if (uploadError) {
+    console.error('Storage upload error:', uploadError);
     return { data: null, error: uploadError };
   }
 
   // Create statement record in database
   const { data: statementData, error: statementError } = await supabase
-    .from('statements')
+    .from('statements' as any)
     .insert({
       user_id: userId,
       file_name: file.name,
@@ -30,6 +34,7 @@ export async function uploadPdf(file: File, userId: string): Promise<{ data: any
     .single();
 
   if (statementError) {
+    console.error('Database insert error:', statementError);
     // Delete the uploaded file if statement record creation fails
     await supabase.storage.from('statements').remove([filePath]);
     return { data: null, error: statementError };
@@ -46,7 +51,7 @@ async function processPdf(statementId: string, userId: string, filePath: string)
   try {
     // Update statement status to processing
     await supabase
-      .from('statements')
+      .from('statements' as any)
       .update({ processing_status: 'processing' } as any)
       .eq('id', statementId);
 
@@ -82,11 +87,11 @@ async function processPdf(statementId: string, userId: string, filePath: string)
       ];
 
       // Insert mock transactions
-      await supabase.from('transactions').insert(mockTransactions as any);
+      await supabase.from('transactions' as any).insert(mockTransactions as any);
 
       // Update statement status to processed
       await supabase
-        .from('statements')
+        .from('statements' as any)
         .update({ processing_status: 'processed' } as any)
         .eq('id', statementId);
     }, 3000);
@@ -94,7 +99,7 @@ async function processPdf(statementId: string, userId: string, filePath: string)
     console.error('Error processing PDF:', error);
     // Update statement status to error
     await supabase
-      .from('statements')
+      .from('statements' as any)
       .update({ processing_status: 'error' } as any)
       .eq('id', statementId);
   }

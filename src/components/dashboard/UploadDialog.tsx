@@ -64,7 +64,12 @@ export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => vo
   };
 
   const handleUpload = async () => {
-    if (!file || !user) return;
+    if (!file || !user) {
+      if (!user) {
+        setError('You must be logged in to upload files.');
+      }
+      return;
+    }
     
     setIsUploading(true);
     setError(null);
@@ -73,7 +78,12 @@ export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => vo
       const { data, error } = await uploadPdf(file, user.id);
       
       if (error) {
-        setError(error.message || 'Upload failed');
+        console.error('Upload error details:', error);
+        if (error.message && error.message.includes('row-level security policy')) {
+          setError('Permission denied: You do not have permission to upload files.');
+        } else {
+          setError(error.message || 'Upload failed');
+        }
         return;
       }
       
@@ -87,9 +97,9 @@ export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => vo
       if (onUploadComplete) {
         onUploadComplete();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload error:', err);
-      setError('An unexpected error occurred during upload');
+      setError('An unexpected error occurred during upload: ' + (err.message || ''));
     } finally {
       setIsUploading(false);
     }
@@ -178,7 +188,7 @@ export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => vo
           </Button>
           <Button 
             onClick={handleUpload} 
-            disabled={!file || isUploading}
+            disabled={!file || isUploading || !user}
             className="relative"
           >
             {isUploading && (
