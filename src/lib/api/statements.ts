@@ -22,14 +22,14 @@ export async function uploadPdf(file: File, userId: string): Promise<{ data: any
 
   // Create statement record in database
   const { data: statementData, error: statementError } = await supabase
-    .from('statements' as any)
+    .from('statements')
     .insert({
       user_id: userId,
       file_name: file.name,
       storage_path: filePath,
       uploaded_at: new Date().toISOString(),
       processing_status: 'uploaded'
-    } as any)
+    })
     .select()
     .single();
 
@@ -42,7 +42,8 @@ export async function uploadPdf(file: File, userId: string): Promise<{ data: any
 
   // Trigger processing - safely access the id
   if (statementData && typeof statementData === 'object' && 'id' in statementData) {
-    await processPdf(statementData.id, userId, filePath);
+    const statementId = statementData.id;
+    await processPdf(statementId, userId, filePath);
   }
 
   return { data: statementData, error: null };
@@ -53,8 +54,8 @@ async function processPdf(statementId: string, userId: string, filePath: string)
   try {
     // Update statement status to processing
     await supabase
-      .from('statements' as any)
-      .update({ processing_status: 'processing' } as any)
+      .from('statements')
+      .update({ processing_status: 'processing' })
       .eq('id', statementId);
 
     // In a real implementation, this would be a server-side API call
@@ -89,20 +90,20 @@ async function processPdf(statementId: string, userId: string, filePath: string)
       ];
 
       // Insert mock transactions
-      await supabase.from('transactions' as any).insert(mockTransactions as any);
+      await supabase.from('transactions').insert(mockTransactions);
 
       // Update statement status to processed
       await supabase
-        .from('statements' as any)
-        .update({ processing_status: 'processed' } as any)
+        .from('statements')
+        .update({ processing_status: 'processed' })
         .eq('id', statementId);
     }, 3000);
   } catch (error) {
     console.error('Error processing PDF:', error);
     // Update statement status to error
     await supabase
-      .from('statements' as any)
-      .update({ processing_status: 'error' } as any)
+      .from('statements')
+      .update({ processing_status: 'error' })
       .eq('id', statementId);
   }
 }
@@ -110,13 +111,15 @@ async function processPdf(statementId: string, userId: string, filePath: string)
 // Function to get all statements for a user
 export async function getUserStatements(userId: string): Promise<{ data: Statement[] | null; error: any }> {
   const { data, error } = await supabase
-    .from('statements' as any)
+    .from('statements')
     .select('*')
     .eq('user_id', userId)
     .order('uploaded_at', { ascending: false });
 
+  // Type assertion with safety check
+  const typedData = data as unknown;
   return { 
-    data: data as Statement[] | null, 
+    data: Array.isArray(typedData) ? typedData as Statement[] : null, 
     error 
   };
 }
@@ -124,14 +127,15 @@ export async function getUserStatements(userId: string): Promise<{ data: Stateme
 // Function to get a specific statement
 export async function getStatement(statementId: string, userId: string): Promise<{ data: Statement | null; error: any }> {
   const { data, error } = await supabase
-    .from('statements' as any)
+    .from('statements')
     .select('*')
     .eq('id', statementId)
     .eq('user_id', userId)
     .single();
 
+  // Type assertion with safety check
   return { 
-    data: data as Statement | null, 
+    data: data as unknown as Statement | null, 
     error 
   };
 }
@@ -139,14 +143,16 @@ export async function getStatement(statementId: string, userId: string): Promise
 // Function to get transactions for a statement
 export async function getStatementTransactions(statementId: string, userId: string): Promise<{ data: Transaction[] | null; error: any }> {
   const { data, error } = await supabase
-    .from('transactions' as any)
+    .from('transactions')
     .select('*')
     .eq('statement_id', statementId)
     .eq('user_id', userId)
     .order('transaction_date', { ascending: false });
 
+  // Type assertion with safety check
+  const typedData = data as unknown;
   return { 
-    data: data as Transaction[] | null, 
+    data: Array.isArray(typedData) ? typedData as Transaction[] : null, 
     error 
   };
 }

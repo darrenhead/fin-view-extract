@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { UploadCloud, AlertCircle, FileText, X } from 'lucide-react';
+import { UploadCloud, AlertCircle, FileText, X, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => void }) {
@@ -67,6 +67,8 @@ export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => vo
     if (!file || !user) {
       if (!user) {
         setError('You must be logged in to upload files.');
+      } else if (!file) {
+        setError('Please select a file to upload.');
       }
       return;
     }
@@ -79,10 +81,19 @@ export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => vo
       
       if (error) {
         console.error('Upload error details:', error);
-        if (error.message && error.message.includes('row-level security policy')) {
-          setError('Permission denied: You do not have permission to upload files.');
+        if (typeof error === 'object' && error !== null) {
+          if ('message' in error) {
+            const errorMessage = error.message as string;
+            if (errorMessage.includes('row-level security policy')) {
+              setError('Permission denied: You do not have permission to upload files.');
+            } else {
+              setError(errorMessage || 'Upload failed');
+            }
+          } else {
+            setError('An error occurred during upload.');
+          }
         } else {
-          setError(error.message || 'Upload failed');
+          setError('Upload failed with an unknown error.');
         }
         return;
       }
@@ -127,6 +138,13 @@ export function UploadDialog({ onUploadComplete }: { onUploadComplete?: () => vo
         </DialogHeader>
         
         <div className="space-y-4 py-4">
+          {!user && (
+            <div className="bg-amber-50 border border-amber-200 p-3 rounded-md flex items-start gap-2 text-amber-700 text-sm">
+              <Info size={16} className="mt-0.5 flex-shrink-0" />
+              <span>You need to be logged in to upload files.</span>
+            </div>
+          )}
+          
           {error && (
             <div className="bg-destructive/10 p-3 rounded-md flex items-start gap-2 text-destructive text-sm">
               <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
